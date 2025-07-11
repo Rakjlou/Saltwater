@@ -12,23 +12,18 @@ public class DialogueLine
     [Tooltip("Can the player skip the text appearing animation ?")]
     public bool animationSkippable = true;
 
-    [Header("Text")]
     [Tooltip("The actual line content")]
     [TextArea(3, 5)]
     public string text;
 
+    [Header("Triggers")]
+    public UnityEventReference startTrigger;
+    public UnityEventReference stopTrigger;
 
     public DialogueManager manager { get; set; }
+    public DialogueLineState state { get; private set; }
 
-    void Start()
-    {
-        
-    }
-
-    void Update()
-    {
-        
-    }
+    private bool skipRequested = false;
 
     public IEnumerator GetDisplayCoroutine()
     {
@@ -36,39 +31,38 @@ public class DialogueLine
         return GetTypingCoroutine();
     }
 
+    public void Initialize(DialogueManager parentManager)
+    {
+        manager = parentManager;
+        state = DialogueLineState.Idle;
+
+        startTrigger.Initialize();
+        stopTrigger.Initialize();
+    }
+
+    public void TypingUpdate()
+    {
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+            skipRequested = true;
+    }
+
     IEnumerator GetTypingCoroutine()
     {
-        // TODO: Separation of concerns potential issue :
-        // - Delay
-        // - Skip animation
-        // - Display
-
         yield return new WaitForSeconds(startDelay);
 
-        var skipAction = new InputAction();
-        var skipRequested = false;
-
-        skipAction.AddBinding("<Mouse>/leftButton");
-        skipAction.performed += ctx => {
-            manager.textMesh.text = text;
-            skipRequested = true;
-        };
-
-        if (animationSkippable)
-            skipAction.Enable();
-
+        state = DialogueLineState.Typing;
         manager.textMesh.text = "";
 
         foreach (char c in text)
         {
-            if (skipRequested)
-                break ;
-
             manager.textMesh.text += c;
+
+            if (animationSkippable && skipRequested)
+                continue ;
+
             yield return new WaitForSeconds(0.05f);
         }
 
-        skipAction.Disable();
-        skipAction.Dispose();
+        state = DialogueLineState.Displayed;
     }
 }

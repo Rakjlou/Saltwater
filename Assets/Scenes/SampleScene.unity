@@ -627,7 +627,28 @@ MonoBehaviour:
   - startDelay: 0
     animationSkippable: 1
     text: La mer est si belle...
-  OnManagerStarted:
+    startTrigger:
+      targetComponent: {fileID: 1921217511}
+      eventFieldName: managerStartEvent
+  - startDelay: 0
+    animationSkippable: 1
+    text: "Profitons-en. Une derni\xE8re fois."
+    startTrigger:
+      targetComponent: {fileID: 1921217511}
+      eventFieldName: anyInputPressed
+  managerStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  lineDisplayStart:
+    m_PersistentCalls:
+      m_Calls: []
+  lineDisplayStop:
+    m_PersistentCalls:
+      m_Calls: []
+  linePrepared:
+    m_PersistentCalls:
+      m_Calls: []
+  anyInputPressed:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &2073462102
