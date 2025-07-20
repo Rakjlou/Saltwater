@@ -28,7 +28,7 @@ public class DialogueLine
     public IEnumerator GetDisplayCoroutine()
     {
         // TODO: Have multiple animation types, do a switch case here
-        return GetTypingCoroutine();
+        return CreateTypingAnimationCoroutine();
     }
 
     public void Initialize(DialogueManager parentManager)
@@ -40,13 +40,13 @@ public class DialogueLine
         stopTrigger.Initialize();
     }
 
-    public void TypingUpdate()
+    public void Update()
     {
         if (Mouse.current.leftButton.wasPressedThisFrame)
             skipRequested = true;
     }
 
-    IEnumerator GetTypingCoroutine()
+    IEnumerator CreateTypingAnimationCoroutine()
     {
         yield return new WaitForSeconds(startDelay);
 

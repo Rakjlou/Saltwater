@@ -15,15 +15,20 @@ public class DialogueManager : MonoBehaviour
     [Header("Dialogue")]
     public List<DialogueLine> dialogueLines = new List<DialogueLine>();
 
+    [HideInInspector]
     public UnityEvent lineDisplayStart;
+    [HideInInspector]
     public UnityEvent lineDisplayStop;
+    [HideInInspector]
     public UnityEvent linePrepared;
+    [HideInInspector]
     public UnityEvent currentLineDiscarded;
+    [HideInInspector]
     public UnityEvent anyInputPressed;
 
     private Coroutine dialogueCoroutine = null;
-    private IEnumerator<DialogueLine> linesIterator;
-    private DialogueLine newCurrentLine;
+    private IEnumerator<DialogueLine> lineIterator;
+    private DialogueLine currentLine;
 
     void Awake()
     {
@@ -33,7 +38,7 @@ public class DialogueManager : MonoBehaviour
         foreach (DialogueLine line in dialogueLines)
             line.Initialize(this);
 
-        linesIterator = dialogueLines.GetEnumerator();
+        lineIterator = dialogueLines.GetEnumerator();
     }
 
     void Start()
@@ -43,57 +48,57 @@ public class DialogueManager : MonoBehaviour
 
     void Update()
     {
-        if (newCurrentLine == null)
+        if (currentLine == null)
             return ;
 
-        if (newCurrentLine.state == DialogueLineState.Typing)
-            newCurrentLine.TypingUpdate();
+        if (currentLine.state == DialogueLineState.Typing)
+            currentLine.Update();
         else if (Mouse.current.leftButton.wasPressedThisFrame)
             anyInputPressed.Invoke();
     }
 
     DialogueLine NextLine()
     {
-        if (linesIterator.MoveNext())
-            return linesIterator.Current;
+        if (lineIterator.MoveNext())
+            return lineIterator.Current;
         return null;
     }
 
-    void PrepareLine()
+    void SetupLineEvents()
     {
-        newCurrentLine?.startTrigger.AddListener(DisplayLine);
-        newCurrentLine?.stopTrigger.AddListener(DiscardLine);
+        currentLine?.startTrigger.AddListener(DisplayLine);
+        currentLine?.stopTrigger.AddListener(DiscardLine);
         linePrepared.Invoke();
     }
 
     void LoadNextLine()
     {
-        newCurrentLine = NextLine();
-        PrepareLine();
+        currentLine = NextLine();
+        SetupLineEvents();
     }
 
     void DisplayLine()
     {
         dialogueCoroutine = StartCoroutine(
-            MonitorDisplay(
-                newCurrentLine.GetDisplayCoroutine()
+            RunDisplayCoroutine(
+                currentLine.GetDisplayCoroutine()
             )
         );
     }
 
     void DiscardLine()
     {
-        if (newCurrentLine.state != DialogueLineState.Displayed)
+        if (currentLine.state != DialogueLineState.Displayed)
             return ;
 
         textMesh.text = "";
-        newCurrentLine.startTrigger.RemoveListener(DisplayLine);
-        newCurrentLine.stopTrigger.RemoveListener(DiscardLine);
+        currentLine.startTrigger.RemoveListener(DisplayLine);
+        currentLine.stopTrigger.RemoveListener(DiscardLine);
         LoadNextLine();
         currentLineDiscarded.Invoke();
     }
 
-    IEnumerator MonitorDisplay(IEnumerator displayCoroutine)
+    IEnumerator RunDisplayCoroutine(IEnumerator displayCoroutine)
     {
         lineDisplayStart.Invoke();
         yield return displayCoroutine;

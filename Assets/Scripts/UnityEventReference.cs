@@ -7,11 +7,11 @@ public class UnityEventReference
     public Component targetComponent;
     public string eventFieldName;
 
-    private UnityEvent targetEvent = null;
+    private UnityEvent unityEvent = null;
 
     public void Initialize()
     {
-        targetEvent = targetComponent
+        unityEvent = targetComponent
             .GetType()
             .GetField(eventFieldName)
             ?.GetValue(targetComponent) as UnityEvent
@@ -20,13 +20,13 @@ public class UnityEventReference
 
     public UnityEvent GetEvent()
     {
-        if (targetEvent != null)
-            return targetEvent;
+        if (unityEvent != null)
+            return unityEvent;
         else if (targetComponent == null)
             return null;
 
         Initialize();
-        return targetEvent;
+        return unityEvent;
     }
 
     public void AddListener(UnityAction callback)
